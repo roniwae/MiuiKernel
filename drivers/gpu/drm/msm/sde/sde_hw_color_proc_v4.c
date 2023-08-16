@@ -246,9 +246,9 @@ void sde_setup_dspp_pccv4(struct sde_hw_dspp *ctx, void *cfg)
 	// Ref: https://forum.xda-developers.com/-/-t4075133
 	if (is_tianma_panel()) {
 		DRM_INFO_ONCE("KCAL: tianma panel detected - limiting RGB to 230\n");
-		kcal_red = min(kcal_red, kcal_tianma);
-		kcal_green = min(kcal_green, kcal_tianma);
-		kcal_blue = min(kcal_blue, kcal_tianma);
+		kcal_red = min(kcal_red, kcal_red);
+		kcal_green = min(kcal_green, kcal_green);
+		kcal_blue = min(kcal_blue, kcal_blue);
 	}
 
 	if (!hw_cfg->payload) {
