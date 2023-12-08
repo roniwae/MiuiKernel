@@ -1,4 +1,4 @@
-name: MiuiQ-ksu
+name: build
 
 
 on:
@@ -20,7 +20,7 @@ jobs:
           mkdir clang && git clone -b clang-12.0 https://github.com/roniwae/RastaMod69-Clang.git clang --depth=1
       - name: Pull kernel source
         run: |
-          git clone --depth=1 https://github.com/roniwae/MiuiKernel.git -b MiuiQ-ksu kernel-source
+          git clone --depth=1 https://github.com/roniwae/MiuiKernel.git -b main kernel-source
           echo "KERNEL_VERSION="$(cat kernel-source/arch/arm64/configs/vendor/ginkgo-perf_defconfig | grep "CONFIG_LOCALVERSION\=" | sed -r 's/.*"(.+)".*/\1/' | sed 's/^.//')"" >> $GITHUB_ENV
           
       - name: Build kernel
@@ -57,5 +57,5 @@ jobs:
       - name: Upload kernel to artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Ryzen-MiuiQ-ksu-${{ env.BUILD_TIME }}
+          name: Ryzen-ksu-${{ env.BUILD_TIME }}
           path: AnyKernel3/*
