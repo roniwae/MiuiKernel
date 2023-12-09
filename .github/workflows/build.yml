@@ -1,0 +1,61 @@
+name: build
+
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup environment
+        run: |
+          sudo apt install python2 -y
+          echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%H-%M~%d_%m_%Y")" >> $GITHUB_ENV
+          echo "TIME=$(TZ=Asia/Jakarta date "+%d_%m_%Y")" >> $GITHUB_ENV
+      - name: Pull toolchain
+        run: |
+          mkdir clang && git clone -b clang-12.0 https://github.com/roniwae/RastaMod69-Clang.git clang --depth=1
+      - name: Pull kernel source
+        run: |
+          git clone --depth=1 https://github.com/roniwae/MiuiKernel.git -b main kernel-source
+          echo "KERNEL_VERSION="$(cat kernel-source/arch/arm64/configs/vendor/ginkgo-perf_defconfig | grep "CONFIG_LOCALVERSION\=" | sed -r 's/.*"(.+)".*/\1/' | sed 's/^.//')"" >> $GITHUB_ENV
+          
+      - name: Build kernel
+        run: |
+          export KBUILD_BUILD_USER="@roni_saja"
+          export KBUILD_BUILD_HOST="AmateurMan"
+          export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
+          args="                  ARCH=arm64 \
+                                  O=../out \
+                                  CC=clang
+                                  LD=ld.lld
+                                  CLANG_TRIPLE=aarch64-linux-gnu- \
+                                  CROSS_COMPILE=$GITHUB_WORKSPACE/clang/bin/aarch64-linux-gnu- \
+                                  CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/clang/bin/arm-linux-gnueabi- "
+          cd kernel-source
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+          make ${args} vendor/ginkgo-perf_defconfig
+          make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
+      - name: Package kernel
+        run: |
+          git clone --depth=1 https://github.com/roniwae/AnyKernel3.git -b MIUI AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/LICENSE AnyKernel3/README.md
+          if [[ -f out/arch/arm64/boot/Image.gz-dtb ]]; then
+            cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
+          elif [[ -f out/arch/arm64/boot/Image-dtb ]]; then
+            cp out/arch/arm64/boot/Image-dtb AnyKernel3/Image-dtb
+          elif [[ -f out/arch/arm64/boot/Image.gz ]]; then
+            cp out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
+          elif [[ -f out/arch/arm64/boot/Image ]]; then
+            cp out/arch/arm64/boot/Image AnyKernel3/Image
+          fi
+          if [ -f out/arch/arm64/boot/dtbo.img ]; then
+            cp out/arch/arm64/boot/dtbo.img AnyKernel3/dtbo.img
+          fi
+      - name: Upload kernel to artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Ryzen-ksu-${{ env.BUILD_TIME }}
+          path: AnyKernel3/*
