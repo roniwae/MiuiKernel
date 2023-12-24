@@ -14,7 +14,7 @@ jobs:
              submodules: true
       - name: Setup environment
         run: |
-          git config --global init.defaultBranch MiuiQ
+          git submodule update --remote
           sudo apt install python2 -y
           echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%H-%M_%d-%m-%Y")" >> $GITHUB_ENV
           echo "KERNEL_VERSION="$(cat arch/arm64/configs/vendor/ginkgo-perf_defconfig | grep "CONFIG_LOCALVERSION\=" | sed -r 's/.*"(.+)".*/\1/' | sed 's/^.//')"" >> $GITHUB_ENV
