@@ -29,7 +29,7 @@ jobs:
           export KBUILD_BUILD_HOST="AmateurMan"
           export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
           args="                  ARCH=arm64 \
-                                  O=../out \
+                                  O=out \
                                   CC=clang \
                                   LD=ld.lld\
                                   AR=llvm-ar \
@@ -61,5 +61,5 @@ jobs:
       - name: Upload kernel to artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Xoplak-kernel-ksu-${{ env.BUILD_TIME }}
+          name: ${{ env.KERNEL_VERSION }}-${{ env.BUILD_TIME }}
           path: AnyKernel3/*
