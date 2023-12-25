@@ -63,14 +63,11 @@
 		qcom,chipid = <0x06010000>;
 
 		qcom,initial-pwrlevel = <6>;
-		qcom,idle-timeout = <64>;
+		qcom,idle-timeout = <80>;
 
 		qcom,ubwc-mode = <1>;
 		qcom,min-access-length = <64>;
 		qcom,highest-bank-bit = <14>;
-
-		/* Avoid L2PC on big cluster CPUs (CPU 4,5,6,7) */
-		qcom,l2pc-cpu-mask = <0x000000f0>;
 
 		/* size in bytes */
 		qcom,snapshot-size = <1048576>;
@@ -121,8 +118,8 @@
 		vdd-supply = <&gpu_gx_gdsc>;
 
 		/* CPU latency parameter */
-		qcom,pm-qos-active-latency = <40>;
-		qcom,pm-qos-wakeup-latency = <40>;
+		qcom,pm-qos-active-latency = <422>;
+		qcom,pm-qos-wakeup-latency = <422>;
 
 		/* Enable context aware freq. scaling */
 		qcom,enable-ca-jump;
