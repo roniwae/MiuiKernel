@@ -1,4 +1,4 @@
-name: MiuiQ
+name: test
 
 
 on:
@@ -10,28 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-             submodules: true
       - name: Setup environment
         run: |
-          git submodule update --remote
           sudo apt install python2 -y
-          echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%H-%M_%d-%m-%Y")" >> $GITHUB_ENV
+          echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%H-%M~%d_%m_%Y")" >> $GITHUB_ENV
+          echo "TIME=$(TZ=Asia/Jakarta date "+%d_%m_%Y")" >> $GITHUB_ENV
           echo "KERNEL_VERSION="$(cat arch/arm64/configs/vendor/ginkgo-perf_defconfig | grep "CONFIG_LOCALVERSION\=" | sed -r 's/.*"(.+)".*/\1/' | sed 's/^.//')"" >> $GITHUB_ENV
-          
       - name: Pull toolchain
         run: |
-          mkdir clang && git clone -q https://github.com/roniwae/RastaMod69-Clang.git clang --depth=1
+          mkdir clang && git clone -b clang-13.0 https://github.com/roniwae/RastaMod69-Clang.git clang --depth=1
           
+      - name: Pushing KernelSU
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+                    
       - name: Build kernel
         run: |
-          export KBUILD_BUILD_USER="@roni_saja"
-          export KBUILD_BUILD_HOST="AmateurMan"
+          export KBUILD_BUILD_USER="Kernel"
+          export KBUILD_BUILD_HOST="Blocock"
           export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
           args="                  ARCH=arm64 \
                                   O=out \
                                   CC=clang \
-                                  LD=ld.lld\
+                                  LD=ld.lld \
                                   AR=llvm-ar \
                                   AS=llvm-as \
                                   NM=llvm-nm \
@@ -45,7 +46,7 @@ jobs:
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
       - name: Package kernel
         run: |
-          git clone --depth=1 https://github.com/roniwae/AnyKernel3.git -b MIUI AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/README.md
+          git clone --depth=1 https://github.com/roniwae/AnyKernel3.git -b MIUI AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/Makefile AnyKernel3/README.md
           if [[ -f out/arch/arm64/boot/Image.gz-dtb ]]; then
             cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
           elif [[ -f out/arch/arm64/boot/Image-dtb ]]; then
@@ -58,6 +59,7 @@ jobs:
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
             cp out/arch/arm64/boot/dtbo.img AnyKernel3/dtbo.img
           fi
+          
       - name: Upload kernel to artifact
         uses: actions/upload-artifact@v3
         with:
